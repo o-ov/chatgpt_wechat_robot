@@ -13,7 +13,7 @@ import (
 	"github.com/qingconglaixueit/wechatbot/config"
 )
 
-// ChatGPTResponseBody 请求体
+// ChatGPTResponseBody 响应体
 type ChatGPTResponseBody struct {
 	ID      string                 `json:"id"`
 	Object  string                 `json:"object"`
@@ -29,22 +29,38 @@ type ChatGPTResponseBody struct {
 	} `json:"error"`
 }
 
+//type ChoiceItem struct {
+//	Text         string `json:"text"`
+//	Index        int    `json:"index"`
+//	Logprobs     int    `json:"logprobs"`
+//	FinishReason string `json:"finish_reason"`
+//}
+
 type ChoiceItem struct {
-	Text         string `json:"text"`
-	Index        int    `json:"index"`
-	Logprobs     int    `json:"logprobs"`
-	FinishReason string `json:"finish_reason"`
+	Message      MessageItem 	`json:"message"`
+	Index        int    		`json:"index"`
+	FinishReason string 		`json:"finish_reason"`
 }
 
-// ChatGPTRequestBody 响应体
+type MessageItem struct {
+	Role 	string `json:"role"`
+	Content string `json:"content"`
+}
+
+// ChatGPTRequestBody 请求体
+//type ChatGPTRequestBody struct {
+//	Model            string  `json:"model"`
+//	Prompt           string  `json:"prompt"`
+//	MaxTokens        uint    `json:"max_tokens"`
+//	Temperature      float64 `json:"temperature"`
+//	TopP             int     `json:"top_p"`
+//	FrequencyPenalty int     `json:"frequency_penalty"`
+//	PresencePenalty  int     `json:"presence_penalty"`
+//}
+
 type ChatGPTRequestBody struct {
-	Model            string  `json:"model"`
-	Prompt           string  `json:"prompt"`
-	MaxTokens        uint    `json:"max_tokens"`
-	Temperature      float64 `json:"temperature"`
-	TopP             int     `json:"top_p"`
-	FrequencyPenalty int     `json:"frequency_penalty"`
-	PresencePenalty  int     `json:"presence_penalty"`
+	Model           string  	`json:"model"`
+	Messages	[]MessageItem 	`json:"message"`
 }
 
 // Completions gtp文本模型回复
@@ -52,6 +68,7 @@ type ChatGPTRequestBody struct {
 //-H "Content-Type: application/json"
 //-H "Authorization: Bearer your chatGPT key"
 //-d '{"model": "text-davinci-003", "prompt": "give me good song", "temperature": 0, "max_tokens": 7}'
+
 func Completions(msg string) (string, error) {
 	var gptResponseBody *ChatGPTResponseBody
 	var resErr error
@@ -73,7 +90,7 @@ func Completions(msg string) (string, error) {
 	}
 	var reply string
 	if gptResponseBody != nil && len(gptResponseBody.Choices) > 0 {
-		reply = gptResponseBody.Choices[0].Text
+		reply = gptResponseBody.Choices[0].Message.Content
 	}
 	return reply, nil
 }
@@ -83,16 +100,17 @@ func httpRequestCompletions(msg string, runtimes int) (*ChatGPTResponseBody, err
 	if cfg.ApiKey == "" {
 		return nil, errors.New("api key required")
 	}
+	var msgItem := MessageItem {
+		Role:		"user",
+		Content:	msg,
+	}
 
+	
 	requestBody := ChatGPTRequestBody{
 		Model:            cfg.Model,
-		Prompt:           msg,
-		MaxTokens:        cfg.MaxTokens,
-		Temperature:      cfg.Temperature,
-		TopP:             1,
-		FrequencyPenalty: 0,
-		PresencePenalty:  0,
+		Messages:         [msgItem],
 	}
+
 	requestData, err := json.Marshal(requestBody)
 	if err != nil {
 		return nil, fmt.Errorf("json.Marshal requestBody error: %v", err)
@@ -100,7 +118,7 @@ func httpRequestCompletions(msg string, runtimes int) (*ChatGPTResponseBody, err
 
 	log.Printf("gpt request(%d) json: %s\n", runtimes, string(requestData))
 
-	req, err := http.NewRequest(http.MethodPost, "https://api.openai.com/v1/completions", bytes.NewBuffer(requestData))
+	req, err := http.NewRequest(http.MethodPost, "https://api.openai.com/v1/chat/completions", bytes.NewBuffer(requestData))
 	if err != nil {
 		return nil, fmt.Errorf("http.NewRequest error: %v", err)
 	}
