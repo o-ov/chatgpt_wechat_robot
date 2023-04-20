@@ -60,7 +60,7 @@ type MessageItem struct {
 
 type ChatGPTRequestBody struct {
 	Model           string  	`json:"model"`
-	Messages	    string 	    `json:"message"`
+	Messages	    []MessageItem 	    `json:"message"`
 }
 
 // Completions gtp文本模型回复
@@ -100,12 +100,15 @@ func httpRequestCompletions(msg string, runtimes int) (*ChatGPTResponseBody, err
 	if cfg.ApiKey == "" {
 		return nil, errors.New("api key required")
 	}
-	var msgItem string = “\"role\": \"user\", \"content\": \"” + msg + "\""
+	msgItem := MessageItem{
+        Role:       "user",
+        Content:    msg,
+    }
 
     
 	requestBody := ChatGPTRequestBody{
 		Model:            cfg.Model,
-		Messages:         msgItem,
+		Messages:         [1]MessageItem {msgItem},
 	}
 
 	requestData, err := json.Marshal(requestBody)
