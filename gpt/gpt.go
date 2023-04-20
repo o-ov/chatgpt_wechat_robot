@@ -105,10 +105,11 @@ func httpRequestCompletions(msg string, runtimes int) (*ChatGPTResponseBody, err
         Content:    msg,
     }
 
+    msgArr := [1]MessageItem{msgItem}
     
 	requestBody := ChatGPTRequestBody{
 		Model:            cfg.Model,
-		Messages:         [1]MessageItem {msgItem},
+		Messages:         msgArr,
 	}
 
 	requestData, err := json.Marshal(requestBody)
