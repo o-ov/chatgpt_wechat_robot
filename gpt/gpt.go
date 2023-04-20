@@ -98,7 +98,7 @@ func httpRequestCompletions(msg string, runtimes int) (*ChatGPTResponseBody, err
         TopP:             1,
         FrequencyPenalty: 0,
         PresencePenalty:  0,
-        Messages:       []*MessageItem{
+        Messages:       &[]*MessageItem{
             {
                 Role:       "user",
                 Content:    msg,
