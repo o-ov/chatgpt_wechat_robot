@@ -9,7 +9,7 @@ import (
 	"log"
 	"net/http"
 	"time"
-
+     gpt35 "github.com/AlmazDelDiablo/gpt3-5-turbo-go"
 	"github.com/qingconglaixueit/wechatbot/config"
 )
 
@@ -100,20 +100,14 @@ func httpRequestCompletions(msg string, runtimes int) (*ChatGPTResponseBody, err
 	if cfg.ApiKey == "" {
 		return nil, errors.New("api key required")
 	}
-	msgItem := MessageItem{
-        Role:       "user",
-        Content:    msg,
-    }
-    
-    bodyMsg, err := json.Marshal(msgItem)
-    if err != nil {
-        return nil, fmt.Errorf("json.Marshal requestBody error: %v", err)
-    }
-    
-    msgArr := [1]string {bodyMsg}
+
 	requestBody := ChatGPTRequestBody{
 		Model:          cfg.Model,
-		Messages:       msgArr,
+		Messages:      []*gpt35.Message{
+            {
+                Role:    gpt35.RoleUser,
+                Content: msg,
+            },
 	}
 
 	requestData, err := json.Marshal(requestBody)
