@@ -28,16 +28,6 @@ type ChatGPTResponseBody struct {
 	} `json:"error"`
 }
 
-type Gpt35Message struct {
-    Role    string `json:"role,omitempty"`
-    Content string   `json:"content"`
-}
-//type ChoiceItem struct {
-//	Text         string `json:"text"`
-//	Index        int    `json:"index"`
-//	Logprobs     int    `json:"logprobs"`
-//	FinishReason string `json:"finish_reason"`
-//}
 
 type ChoiceItem struct {
 	Message      MessageItem 	`json:"message"`
@@ -51,20 +41,18 @@ type MessageItem struct {
 }
 
 // ChatGPTRequestBody 请求体
-//type ChatGPTRequestBody struct {
-//	Model            string  `json:"model"`
-//	Prompt           string  `json:"prompt"`
-//	MaxTokens        uint    `json:"max_tokens"`
-//	Temperature      float64 `json:"temperature"`
-//	TopP             int     `json:"top_p"`
-//	FrequencyPenalty int     `json:"frequency_penalty"`
-//	PresencePenalty  int     `json:"presence_penalty"`
-//}
-
 type ChatGPTRequestBody struct {
-	Model           string  	`json:"model"`
-	Messages	    []MessageItem 	    `json:"message"`
+	Model            string  `json:"model"`
+	Prompt           string  `json:"prompt"`
+	MaxTokens        uint    `json:"max_tokens"`
+	Temperature      float64 `json:"temperature"`
+	TopP             int     `json:"top_p"`
+	FrequencyPenalty int     `json:"frequency_penalty"`
+	PresencePenalty  int     `json:"presence_penalty"`
+    Messages        []MessageItem         `json:"message"`
 }
+
+
 
 // Completions gtp文本模型回复
 //curl https://api.openai.com/v1/completions
@@ -103,19 +91,20 @@ func httpRequestCompletions(msg string, runtimes int) (*ChatGPTResponseBody, err
 	if cfg.ApiKey == "" {
 		return nil, errors.New("api key required")
 	}
-    msgbd := Gpt35Message{
-        Role:    "user",
-        Content: msg,
-    }
-    
-    var contentResps []Gpt35Message
-    contentResps.append(msgbd)
-	
     requestBody := ChatGPTRequestBody{
-		Model:          cfg.Model,
-		Messages:       contentResps,
-	}
-
+        Model:            cfg.Model,
+        MaxTokens:        cfg.MaxTokens,
+        Temperature:      cfg.Temperature,
+        TopP:             1,
+        FrequencyPenalty: 0,
+        PresencePenalty:  0,
+        Messages:       []*MessageItem{
+            {
+                Role:       "user",
+                Content:    msg,
+            },
+        },
+    }
 	requestData, err := json.Marshal(requestBody)
 	if err != nil {
 		return nil, fmt.Errorf("json.Marshal requestBody error: %v", err)
