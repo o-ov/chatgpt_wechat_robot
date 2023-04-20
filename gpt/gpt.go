@@ -100,15 +100,15 @@ func httpRequestCompletions(msg string, runtimes int) (*ChatGPTResponseBody, err
 	if cfg.ApiKey == "" {
 		return nil, errors.New("api key required")
 	}
-	var msgItem := MessageItem {
+	var msgItem := MessageItem{
 		Role:		"user",
 		Content:	msg,
 	}
 
-	
+    
 	requestBody := ChatGPTRequestBody{
 		Model:            cfg.Model,
-		Messages:         [msgItem],
+		Messages:         [1]MessageItem {msgItem},
 	}
 
 	requestData, err := json.Marshal(requestBody)
