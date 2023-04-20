@@ -49,7 +49,7 @@ type ChatGPTRequestBody struct {
 	TopP             int     `json:"top_p"`
 	FrequencyPenalty int     `json:"frequency_penalty"`
 	PresencePenalty  int     `json:"presence_penalty"`
-    Messages         []Message         `json:"message"`
+    Messages         []Message         `json:"messages"`
 }
 
 
