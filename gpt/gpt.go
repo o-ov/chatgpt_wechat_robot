@@ -29,7 +29,7 @@ type ChatGPTResponseBody struct {
 }
 
 type Gpt35Message struct {
-    Role    RoleType `json:"role,omitempty"`
+    Role    string `json:"role,omitempty"`
     Content string   `json:"content"`
 }
 //type ChoiceItem struct {
