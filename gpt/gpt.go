@@ -9,7 +9,6 @@ import (
 	"log"
 	"net/http"
 	"time"
-     gpt35 "github.com/AlmazDelDiablo/gpt3-5-turbo-go"
 	"github.com/qingconglaixueit/wechatbot/config"
 )
 
@@ -29,6 +28,10 @@ type ChatGPTResponseBody struct {
 	} `json:"error"`
 }
 
+type Gpt35Message struct {
+    Role    RoleType `json:"role,omitempty"`
+    Content string   `json:"content"`
+}
 //type ChoiceItem struct {
 //	Text         string `json:"text"`
 //	Index        int    `json:"index"`
@@ -103,9 +106,9 @@ func httpRequestCompletions(msg string, runtimes int) (*ChatGPTResponseBody, err
 
 	requestBody := ChatGPTRequestBody{
 		Model:          cfg.Model,
-		Messages:      []*gpt35.Message{
+		Messages:      []*Gpt35Message{
             {
-                Role:    gpt35.RoleUser,
+                Role:    "user",
                 Content: msg,
             },
 	}
