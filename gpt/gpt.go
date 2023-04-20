@@ -111,6 +111,7 @@ func httpRequestCompletions(msg string, runtimes int) (*ChatGPTResponseBody, err
                 Role:    "user",
                 Content: msg,
             },
+        },
 	}
 
 	requestData, err := json.Marshal(requestBody)
