@@ -105,7 +105,7 @@ func httpRequestCompletions(msg string, runtimes int) (*ChatGPTResponseBody, err
         Content:    msg,
     }
     
-    bodyMsg,err = json.Marshal(msgItem)
+    bodyMsg, err := json.Marshal(msgItem)
     if err != nil {
         return nil, fmt.Errorf("json.Marshal requestBody error: %v", err)
     }
