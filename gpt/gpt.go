@@ -30,14 +30,14 @@ type ChatGPTResponseBody struct {
 
 
 type ChoiceItem struct {
-	Message      MessageItem 	`json:"message"`
+	Message      Message 	    `json:"message"`
 	Index        int    		`json:"index"`
 	FinishReason string 		`json:"finish_reason"`
 }
 
-type MessageItem struct {
-	Role 	string `json:"role"`
-	Content string `json:"content"`
+type Message struct {
+    Role    string `json:"role"`
+    Content string `json:"content"`
 }
 
 // ChatGPTRequestBody 请求体
@@ -49,7 +49,7 @@ type ChatGPTRequestBody struct {
 	TopP             int     `json:"top_p"`
 	FrequencyPenalty int     `json:"frequency_penalty"`
 	PresencePenalty  int     `json:"presence_penalty"`
-    Messages        []MessageItem         `json:"message"`
+    Messages         []Message         `json:"message"`
 }
 
 
@@ -91,6 +91,8 @@ func httpRequestCompletions(msg string, runtimes int) (*ChatGPTResponseBody, err
 	if cfg.ApiKey == "" {
 		return nil, errors.New("api key required")
 	}
+    
+    
     requestBody := ChatGPTRequestBody{
         Model:            cfg.Model,
         MaxTokens:        cfg.MaxTokens,
@@ -98,19 +100,27 @@ func httpRequestCompletions(msg string, runtimes int) (*ChatGPTResponseBody, err
         TopP:             1,
         FrequencyPenalty: 0,
         PresencePenalty:  0,
-        Messages:       &[]*MessageItem{
+        Messages:        []Message{
             {
-                Role:       "user",
-                Content:    msg,
+                Role:    "system",
+                Content: "You are a helpful assistant.",
+            },
+            {
+                Role:    "user",
+                Content: msg,
             },
         },
     }
+    
+    
 	requestData, err := json.Marshal(requestBody)
 	if err != nil {
 		return nil, fmt.Errorf("json.Marshal requestBody error: %v", err)
 	}
-	log.Printf("gpt request(%d) json: %s\n", runtimes, string(requestData))
-	req, err := http.NewRequest(http.MethodPost, "https://api.openai.com/v1/chat/completions", bytes.NewBuffer(requestData))
+	
+    log.Printf("gpt request(%d) json: %s\n", runtimes, string(requestData))
+	
+    req, err := http.NewRequest(http.MethodPost, "https://api.openai.com/v1/chat/completions", bytes.NewBuffer(requestData))
 	if err != nil {
 		return nil, fmt.Errorf("http.NewRequest error: %v", err)
 	}
