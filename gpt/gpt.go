@@ -6,6 +6,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"io/ioutil"
 	"log"
 	"net/http"
 	"time"
@@ -36,6 +37,19 @@ type Event struct {
     Choices []Choice `json:"choices"`
 }
 
+type CreateCompletionStreamingResponse struct {
+    ID        string             `json:"id,omitempty"`
+    Object    string             `json:"object,omitempty"`
+    CreatedAt int64              `json:"created_at,omitempty"`
+    Choices   []*StreamingChoice `json:"choices,omitempty"`
+}
+
+type StreamingChoice struct {
+    Delta        *Message `json:"delta,omitempty"`
+    Index        int      `json:"index,omitempty"`
+    LogProbs     int      `json:"logprobs,omitempty"`
+    FinishReason string   `json:"finish_reason,omitempty"`
+}
 
 type ChoiceItem struct {
 	Message      Message 	    `json:"message"`
@@ -44,8 +58,9 @@ type ChoiceItem struct {
 }
 
 type Message struct {
-    Role    string `json:"role"`
-    Content string `json:"content"`
+    Role    string `json:"role,omitempty"`
+    Content string `json:"content,omitempty"`
+    Name    string `json:"name,omitempty"`
 }
 
 // ChatGPTRequestBody 请求体
@@ -78,7 +93,7 @@ func Completions(msg string) (string, error) {
 			time.Sleep(time.Duration(retry-1) * 100 * time.Millisecond)
 		}
         
-        reply, resErr = httpRequestCompletions(msg, retry)
+        reply, resErr = httpStreamRequestCompletions(msg, retry)
 		if resErr != nil {
 			log.Printf("gpt request(%d) error: %v\n", retry, resErr)
 			continue
@@ -144,6 +159,12 @@ func httpRequestCompletions(msg string, runtimes int) (string, error) {
     // Close the response body
 	defer response.Body.Close()
     
+    responseBody, err := ioutil.ReadAll(response.Body)
+    if err != nil {
+        return "", fmt.Errorf("client.Do error: %v", err)
+    }
+    
+    
 // create variables to collect the stream of events
     var collectedEvents []Event
     var completionText string
@@ -179,4 +200,79 @@ func httpRequestCompletions(msg string, runtimes int) (string, error) {
     fmt.Printf("Full text received: %s\n", completionText)
     
 	return completionText, nil
+}
+
+
+func httpStreamRequestCompletions(msg string, runtimes int) (string, error) {
+    cfg := config.LoadConfig()
+    if cfg.ApiKey == "" {
+        return "", errors.New("api key required")
+    }
+    startTime := time.Now()
+    requestBody := ChatGPTRequestBody{
+        Model:            cfg.Model,
+        MaxTokens:        cfg.MaxTokens,
+        Temperature:      cfg.Temperature,
+        TopP:             1,
+        FrequencyPenalty: 0,
+        PresencePenalty:  0,
+        Stream:           true,
+        Messages:        []Message{
+            {
+                Role:    "system",
+                Content: "You are a helpful assistant.",
+            },
+            {
+                Role:    "user",
+                Content: msg,
+            },
+        },
+    }
+    
+    
+    requestData, err := json.Marshal(requestBody)
+    if err != nil {
+        return "", fmt.Errorf("json.Marshal requestBody error: %v", err)
+    }
+    
+    log.Printf("gpt request(%d) json: %s\n", runtimes, string(requestData))
+    
+    req, err := http.NewRequest(http.MethodPost, "https://api.openai.com/v1/chat/completions", bytes.NewBuffer(requestData))
+    if err != nil {
+        return "", fmt.Errorf("http.NewRequest error: %v", err)
+    }
+    req.Header.Set("Content-Type", "application/json")
+    req.Header.Set("Authorization", "Bearer "+cfg.ApiKey)
+    
+    client := &http.Client{}
+    response, err := client.Do(req)
+    if err != nil {
+        return "", fmt.Errorf("client.Do error: %v", err)
+    }
+    // Close the response body
+    defer response.Body.Close()
+   
+
+    // create variables to collect the stream of chunks
+    collectedChunks := make([]CreateCompletionStreamingResponse, 0)
+    collectedMessages := make([]string, 0)
+
+    // iterate through the stream of events
+    for _, chunk := range response {
+        chunkTime := time.Since(startTime).Seconds() // calculate the time delay of the chunk
+        collectedChunks = append(collectedChunks, chunk) // save the event response
+        chunkMessage := chunk.Choices[0].Delta.Content // extract the message
+        collectedMessages = append(collectedMessages, chunkMessage) // save the message
+        fmt.Printf("Message received %.2f seconds after request: %s\n", chunkTime, chunkMessage) // print the delay and text
+    }
+
+    // print the time delay and text received
+    fmt.Printf("Full response received %.2f seconds after request\n", time.Since(startTime).Seconds())
+    fullReplyContent := ""
+    for _, message := range collectedMessages {
+        fullReplyContent += message
+    }
+    fmt.Printf("Full conversation received: %s\n", fullReplyContent)
+    return fullReplyContent, nil
+
 }
