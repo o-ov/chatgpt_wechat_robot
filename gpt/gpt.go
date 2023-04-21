@@ -29,6 +29,14 @@ type ChatGPTResponseBody struct {
 	} `json:"error"`
 }
 
+type Choice struct {
+    Text string `json:"text"`
+}
+
+type Event struct {
+    Choices []Choice `json:"choices"`
+}
+
 
 type ChoiceItem struct {
 	Message      Message 	    `json:"message"`
@@ -64,7 +72,7 @@ type ChatGPTRequestBody struct {
 func Completions(msg string) (string, error) {
 	var gptResponseBody *ChatGPTResponseBody
 	var resErr error
-    start := time.Now()
+    startTime := time.Now()
 	for retry := 1; retry <= 3; retry++ {
 		if retry > 1 {
 			time.Sleep(time.Duration(retry-1) * 100 * time.Millisecond)
