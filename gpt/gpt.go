@@ -9,6 +9,7 @@ import (
     "io/ioutil"
 	"net/http"
 	"time"
+    "bufio"
 	"github.com/qingconglaixueit/wechatbot/config"
 )
 
@@ -37,7 +38,7 @@ type Event struct {
 }
 
 type StreamRes struct {
-    Data []*CreateCompletionStreamingResponse `json:"data"`
+    Data *CreateCompletionStreamingResponse `json:"data"`
 }
 
 type CreateCompletionStreamingResponse struct {
@@ -165,29 +166,47 @@ func httpStreamRequestCompletions(msg string, runtimes int) (string, error) {
     if err != nil {
         return "", fmt.Errorf("ioutil.ReadAll error: %v", err)
     }
-
     bodyString := string(bodyBytes)
-    fmt.Println("no 172" + bodyString)
-    var collectedChunks StreamRes
-
-    err = json.Unmarshal(bodyBytes, &collectedChunks)
-    if err != nil {
-        return "", fmt.Errorf("Unmarshal error: %v", err)
-    }
+    fmt.Println("no 170" + bodyString)
+    
     collectedMessages := make([]string, 0)
-    for _, data := range collectedChunks.Data{
-        chunkMessage := data.Choices[0].Delta.Content // extract the message
-        fmt.Println("no 182" + chunkMessage)
+
+    // Create a new buffered reader for the response body
+    reader := bufio.NewReader(response.Body)
+
+    // Loop through each line in the response
+    for {
+        // Read a line from the response
+        line, err := reader.ReadBytes('\n')
+        if err != nil {
+            return "", fmt.Errorf("ReadBytes error: %v", err)
+        }
+
+        // Remove the newline character from the line
+        line = line[:len(line)-1]
+
+        // Check if the line is the end of the stream
+        if string(line) == "[DONE]" {
+            fmt.Println("Stream finished")
+            break
+        }
+
+        // Otherwise, assume the line is JSON data
+        fmt.Println("Received JSON data:", string(line))
+        var collectedChunks StreamRes
+        err = json.Unmarshal(line, &collectedChunks)
+        if err != nil {
+            return "", fmt.Errorf("Unmarshal error: %v", err)
+        }
+        chunkMessage := collectedChunks.Data.Choices[0].Delta.Content // extract the message
+        fmt.Println("no 202" + chunkMessage)
         collectedMessages = append(collectedMessages, chunkMessage) // save the message
     }
-    
 
     // print the time delay and text received
     fullReplyContent := ""
-    if len(collectedMessages) > 0 {
-        for _, message := range collectedMessages {
-            fullReplyContent += message
-        }
+    for _, message := range collectedMessages {
+        fullReplyContent += message
     }
     fmt.Printf("Full conversation received: %s\n", fullReplyContent)
     return fullReplyContent, nil
