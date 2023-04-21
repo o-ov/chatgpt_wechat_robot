@@ -183,7 +183,7 @@ func httpStreamRequestCompletions(msg string, runtimes int) (string, error) {
 
         
         // Check if the line is the end of the stream
-        if string(line) == " data: [DONE]" {
+        if string(line) == "data: [DONE]" {
             fmt.Println("Stream finished")
             break
         }
