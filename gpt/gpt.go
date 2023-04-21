@@ -99,7 +99,7 @@ func Completions(msg string) (string, error) {
 func httpRequestCompletions(msg string, runtimes int) (string, error) {
 	cfg := config.LoadConfig()
 	if cfg.ApiKey == "" {
-		return nil, errors.New("api key required")
+		return “”, errors.New("api key required")
 	}
     startTime := time.Now()
     requestBody := ChatGPTRequestBody{
@@ -125,14 +125,14 @@ func httpRequestCompletions(msg string, runtimes int) (string, error) {
     
 	requestData, err := json.Marshal(requestBody)
 	if err != nil {
-		return nil, fmt.Errorf("json.Marshal requestBody error: %v", err)
+		return “”, fmt.Errorf("json.Marshal requestBody error: %v", err)
 	}
 	
     log.Printf("gpt request(%d) json: %s\n", runtimes, string(requestData))
 	
     req, err := http.NewRequest(http.MethodPost, "https://api.openai.com/v1/chat/completions", bytes.NewBuffer(requestData))
 	if err != nil {
-		return nil, fmt.Errorf("http.NewRequest error: %v", err)
+		return “”, fmt.Errorf("http.NewRequest error: %v", err)
 	}
 	req.Header.Set("Content-Type", "application/json")
 	req.Header.Set("Authorization", "Bearer "+cfg.ApiKey)
@@ -140,7 +140,7 @@ func httpRequestCompletions(msg string, runtimes int) (string, error) {
     client := &http.Client{}
 	response, err := client.Do(req)
 	if err != nil {
-		return nil, fmt.Errorf("client.Do error: %v", err)
+		return “”, fmt.Errorf("client.Do error: %v", err)
 	}
     // Close the response body
 	defer response.Body.Close()
@@ -157,7 +157,7 @@ func httpRequestCompletions(msg string, runtimes int) (string, error) {
         var event Event
         err := json.Unmarshal(scanner.Bytes(), &event)
         if err != nil {
-            panic(err)
+            return “”, fmt.Errorf("client.Do error: %v", err)
         }
 
         // calculate the time delay of the event
