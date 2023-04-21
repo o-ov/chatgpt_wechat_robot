@@ -2,6 +2,7 @@ package gpt
 
 import (
 	"bytes"
+    "bufio"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -48,6 +49,7 @@ type ChatGPTRequestBody struct {
 	TopP             int     `json:"top_p"`
 	FrequencyPenalty int     `json:"frequency_penalty"`
 	PresencePenalty  int     `json:"presence_penalty"`
+    Stream  string                 `json:"stream"`
     Messages         []Message         `json:"messages"`
 }
 
@@ -102,6 +104,7 @@ func httpRequestCompletions(msg string, runtimes int) (*ChatGPTResponseBody, err
         TopP:             1,
         FrequencyPenalty: 0,
         PresencePenalty:  0,
+        Stream:           "True",
         Messages:        []Message{
             {
                 Role:    "system",
@@ -128,11 +131,20 @@ func httpRequestCompletions(msg string, runtimes int) (*ChatGPTResponseBody, err
 	}
 	req.Header.Set("Content-Type", "application/json")
 	req.Header.Set("Authorization", "Bearer "+cfg.ApiKey)
-	client := &http.Client{Timeout: 15 * time.Second}
+	
+    client := &http.Client{}
 	response, err := client.Do(req)
 	if err != nil {
 		return nil, fmt.Errorf("client.Do error: %v", err)
 	}
+ 
+    // Read the response body as a stream of text and print it to the console
+    scanner := bufio.NewScanner(response.Body)
+    for scanner.Scan() {
+        fmt.Println(scanner.Text())
+    }
+
+    // Close the response body
 	defer response.Body.Close()
 
 	body, err := ioutil.ReadAll(response.Body)
