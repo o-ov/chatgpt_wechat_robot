@@ -114,7 +114,6 @@ func httpStreamRequestCompletions(msg string, runtimes int) (string, error) {
     if cfg.ApiKey == "" {
         return "", errors.New("api key required")
     }
-    startTime := time.Now()
     requestBody := ChatGPTRequestBody{
         Model:            cfg.Model,
         MaxTokens:        cfg.MaxTokens,
