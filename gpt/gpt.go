@@ -181,14 +181,14 @@ func httpStreamRequestCompletions(msg string, runtimes int) (string, error) {
             return "", fmt.Errorf("ReadBytes error: %v", err)
         }
 
-        // Remove the newline character from the line
-        line = line[6:len(line)-1]
-
+        
         // Check if the line is the end of the stream
         if string(line) == "[DONE]" {
             fmt.Println("Stream finished")
             break
         }
+        // Remove the newline character from the line
+        line = line[6:len(line)-1]
 
         // Otherwise, assume the line is JSON data
         fmt.Println("Received JSON data:", string(line))
@@ -202,10 +202,10 @@ func httpStreamRequestCompletions(msg string, runtimes int) (string, error) {
         if collectedChunks.Choices != nil && len(collectedChunks.Choices) > 0  {
             // Content字段为空
             temp := collectedChunks.Choices[0]
-            fmt.Printf("collectedChunks: %+v\n", temp)
+            fmt.Printf("temp: %+v\n", temp)
             if temp.Delta != nil {
                 tmp := temp.Delta
-                fmt.Printf("collectedChunks: %+v\n", tmp)
+                fmt.Printf("tmp: %+v\n", tmp)
             }
         }
     }
