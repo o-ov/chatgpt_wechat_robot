@@ -183,14 +183,14 @@ func httpStreamRequestCompletions(msg string, runtimes int) (string, error) {
 
         
         // Check if the line is the end of the stream
-        if string(line) == "data: [DONE]" {
-            fmt.Println("Stream finished")
-            break
-        }
         // Remove the newline character from the line
         fmt.Println("Received JSON data:", string(line))
         if len(line)>6 {
             line = line[6:len(line)-1]
+        if string(line) == "[DONE]" {
+            fmt.Println("Stream finished")
+            break
+        }
             // Otherwise, assume the line is JSON data
             var collectedChunks CreateCompletionStreamingResponse
             err = json.Unmarshal(line, &collectedChunks)
