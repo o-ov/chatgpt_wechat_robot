@@ -2,7 +2,6 @@ package gpt
 
 import (
 	"bytes"
-    "bufio"
 	"encoding/json"
 	"errors"
 	"fmt"
