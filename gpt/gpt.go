@@ -36,6 +36,10 @@ type Event struct {
     Choices []Choice `json:"choices"`
 }
 
+type StreamRes struct {
+    Data *CreateCompletionStreamingResponse `json:"data"`
+}
+
 type CreateCompletionStreamingResponse struct {
     ID        string             `json:"id,omitempty"`
     Object    string             `json:"object,omitempty"`
@@ -165,7 +169,7 @@ func httpStreamRequestCompletions(msg string, runtimes int) (string, error) {
     bodyString := string(bodyBytes)
     fmt.Println(bodyString)
     
-/*
+
     // create variables to collect the stream of chunks
     collectedChunks := make([]CreateCompletionStreamingResponse, 0)
     collectedMessages := make([]string, 0)
@@ -177,23 +181,23 @@ func httpStreamRequestCompletions(msg string, runtimes int) (string, error) {
         return "", fmt.Errorf("client.Do error: %v", err)
     }
     // 解码字节为 CreateCompletionStreamingResponse 类型
-    var streamingResponse CreateCompletionStreamingResponse
+    var streamingResponse StreamRes
     err = json.Unmarshal(chunk, &streamingResponse)
     if err != nil {
-        return "", fmt.Errorf("client.Do error: %v", err)
+        return "", fmt.Errorf("Unmarshal error: %v", err)
     }
     // 将解码后的类型添加到切片中
-    collectedChunks = append(collectedChunks, streamingResponse)
-    chunkMessage := streamingResponse.Choices[0].Delta.Content // extract the message
+    collectedChunks = append(collectedChunks, streamingResponse.Data)
+    chunkMessage := streamingResponse.Data.Choices[0].Delta.Content // extract the message
     collectedMessages = append(collectedMessages, chunkMessage) // save the message
     }
     
-*/
+
     // print the time delay and text received
     fullReplyContent := ""
-    //for _, message := range collectedMessages {
-      //  fullReplyContent += message
-    //}
-    //fmt.Printf("Full conversation received: %s\n", fullReplyContent)
+    for _, message := range collectedMessages {
+        fullReplyContent += message
+    }
+    fmt.Printf("Full conversation received: %s\n", fullReplyContent)
     return fullReplyContent, nil
 }
