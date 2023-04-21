@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"log"
     "io/ioutil"
+    "bufio"
 	"net/http"
 	"time"
 	"github.com/qingconglaixueit/wechatbot/config"
