@@ -189,32 +189,28 @@ func httpStreamRequestCompletions(msg string, runtimes int) (string, error) {
         }
         // Remove the newline character from the line
         fmt.Println("Received JSON data:", string(line))
-        if string(line) == "" {
-            fmt.Println("jump")
-            break
-        }
-        line = line[6:len(line)-1]
+        if len(line)>6 {
+            line = line[6:len(line)-1]
+            // Otherwise, assume the line is JSON data
+            var collectedChunks CreateCompletionStreamingResponse
+            err = json.Unmarshal(line, &collectedChunks)
+            if err != nil {
+                return "", fmt.Errorf("Unmarshal error: %v", err)
+            }
+            fmt.Printf("collectedChunks: %+v\n", collectedChunks)
 
-        // Otherwise, assume the line is JSON data
-        fmt.Println("Received JSON data:", string(line))
-        var collectedChunks CreateCompletionStreamingResponse
-        err = json.Unmarshal(line, &collectedChunks)
-        fmt.Printf("collectedChunks: %+v\n", collectedChunks)
-
-        if err != nil {
-            return "", fmt.Errorf("Unmarshal error: %v", err)
-        }
-        if collectedChunks.Choices != nil && len(collectedChunks.Choices) > 0  {
-            // Content字段为空
-            temp := collectedChunks.Choices[0]
-            fmt.Printf("temp: %+v\n", temp)
-            if temp.Delta != nil {
-                tmp := temp.Delta
-                fmt.Printf("tmp: %+v\n", tmp)
-                if tmp.Content != ""{
-                    chunkMessage := tmp.Content // extract the message
-                    fmt.Println("no 202" + chunkMessage)
-                    collectedMessages = append(collectedMessages, chunkMessage) // save the message
+            if collectedChunks.Choices != nil && len(collectedChunks.Choices) > 0  {
+                // Content字段为空
+                temp := collectedChunks.Choices[0]
+                fmt.Printf("temp: %+v\n", temp)
+                if temp.Delta != nil {
+                    tmp := temp.Delta
+                    fmt.Printf("tmp: %+v\n", tmp)
+                    if tmp.Content != ""{
+                        chunkMessage := tmp.Content // extract the message
+                        fmt.Println("no 202" + chunkMessage)
+                        collectedMessages = append(collectedMessages, chunkMessage) // save the message
+                    }
                 }
             }
         }
