@@ -181,7 +181,7 @@ func httpStreamRequestCompletions(msg string, runtimes int) (string, error) {
         }
 
         // Remove the newline character from the line
-        line = line[:len(line)-1]
+       // line = line[:len(line)-1]
 
         // Check if the line is the end of the stream
         if string(line) == "[DONE]" {
