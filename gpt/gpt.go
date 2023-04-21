@@ -181,16 +181,13 @@ func httpStreamRequestCompletions(msg string, runtimes int) (string, error) {
     collectedChunks = append(collectedChunks, streamingResponse)
     chunkMessage := streamingResponse.Choices[0].Delta.Content // extract the message
     collectedMessages = append(collectedMessages, chunkMessage) // save the message
-    fmt.Printf("Message received %.2f seconds after request: %s\n", chunkTime, chunkMessage) // print the delay and text
     }
     
     // print the time delay and text received
-    fmt.Printf("Full response received %.2f seconds after request\n", time.Since(startTime).Seconds())
     fullReplyContent := ""
     for _, message := range collectedMessages {
         fullReplyContent += message
     }
     fmt.Printf("Full conversation received: %s\n", fullReplyContent)
     return fullReplyContent, nil
-
 }
