@@ -91,20 +91,15 @@ func Completions(msg string) (string, error) {
 	var resErr error
     start := time.Now()
     var reply string
-	for retry := 1; retry <= 3; retry++ {
-		if retry > 1 {
-			time.Sleep(time.Duration(retry-1) * 100 * time.Millisecond)
-		}
-        
-        reply, resErr = httpStreamRequestCompletions(msg, retry)
-		if resErr != nil {
-			log.Printf("gpt request(%d) error: %v\n", retry, resErr)
-			continue
-		}
-		if reply == "" {
-			break
-		}
-	}
+	reply, resErr = httpStreamRequestCompletions(msg, 1)
+    if resErr != nil {
+        log.Printf("gpt request(%d) error: %v\n", retry, resErr)
+        continue
+    }
+    if reply == "" {
+        break
+    }
+	
 	if resErr != nil {
 		return "", resErr
 	}
