@@ -170,7 +170,7 @@ func httpStreamRequestCompletions(msg string, runtimes int) (string, error) {
     fmt.Println("no 172" + bodyString)
     var collectedChunks StreamRes
 
-    err = json.Unmarshal(bodyString, &collectedChunks)
+    err = json.Unmarshal(bodyBytes, &collectedChunks)
     if err != nil {
         return "", fmt.Errorf("Unmarshal error: %v", err)
     }
