@@ -165,7 +165,7 @@ func httpStreamRequestCompletions(msg string, runtimes int) (string, error) {
     collectedMessages := make([]string, 0)
 
     // iterate through the stream of events
-    for chunk in response {
+    for chunk := range response{
         chunkTime := time.Since(startTime).Seconds() // calculate the time delay of the chunk
         collectedChunks = append(collectedChunks, chunk) // save the event response
         chunkMessage := chunk.Choices[0].Delta.Content // extract the message
