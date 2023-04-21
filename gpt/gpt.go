@@ -6,7 +6,6 @@ import (
 	"errors"
 	"fmt"
 	"log"
-    "io/ioutil"
     "io"
 	"net/http"
 	"time"
@@ -145,7 +144,6 @@ func httpStreamRequestCompletions(msg string, runtimes int) (string, error) {
     if err != nil {
         return "", fmt.Errorf("json.Marshal requestBody error: %v", err)
     }
-    
     log.Printf("gpt request(%d) json: %s\n", runtimes, string(requestData))
     
     req, err := http.NewRequest(http.MethodPost, "https://api.openai.com/v1/chat/completions", bytes.NewBuffer(requestData))
@@ -162,13 +160,6 @@ func httpStreamRequestCompletions(msg string, runtimes int) (string, error) {
     }
     // Close the response body
     defer response.Body.Close()
-   
-    bodyBytes, err := ioutil.ReadAll(response.Body)
-    if err != nil {
-        return "", fmt.Errorf("ioutil.ReadAll error: %v", err)
-    }
-    bodyString := string(bodyBytes)
-    fmt.Println("no 170" + bodyString)
     
     collectedMessages := make([]string, 0)
 
@@ -176,14 +167,17 @@ func httpStreamRequestCompletions(msg string, runtimes int) (string, error) {
     reader := bufio.NewReader(response.Body)
 
     // Loop through each line in the response
+    i := 1
     for {
+        fmt.Println("for Loop %d",i)
+        i++
         // Read a line from the response
         line, err := reader.ReadBytes('\n')
         if err != nil {
             if err == io.EOF {
                 break
             }
-        return "", fmt.Errorf("ReadBytes error: %v", err)
+            return "", fmt.Errorf("ReadBytes error: %v", err)
         }
 
         // Remove the newline character from the line
@@ -215,3 +209,4 @@ func httpStreamRequestCompletions(msg string, runtimes int) (string, error) {
     fmt.Printf("Full conversation received: %s\n", fullReplyContent)
     return fullReplyContent, nil
 }
+
