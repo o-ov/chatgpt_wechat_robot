@@ -2,10 +2,10 @@ package gpt
 
 import (
 	"bytes"
+    "bufio"
 	"encoding/json"
 	"errors"
 	"fmt"
-	"io/ioutil"
 	"log"
 	"net/http"
 	"time"
@@ -158,24 +158,32 @@ func httpStreamRequestCompletions(msg string, runtimes int) (string, error) {
     // Close the response body
     defer response.Body.Close()
    
-    respBytes, err := ioutil.ReadAll(response.Body)
-    if err != nil {
-        return "", fmt.Errorf("client.Do error: %v", err)
-    }
+    
+    
 
     // create variables to collect the stream of chunks
     collectedChunks := make([]CreateCompletionStreamingResponse, 0)
     collectedMessages := make([]string, 0)
-
-    // iterate through the stream of events
-    for _, chunk := range respBytes {
-        chunkTime := time.Since(startTime).Seconds() // calculate the time delay of the chunk
-        collectedChunks = append(collectedChunks, chunk) // save the event response
-        chunkMessage := chunk.Choices[0].Delta.Content // extract the message
-        collectedMessages = append(collectedMessages, chunkMessage) // save the message
-        fmt.Printf("Message received %.2f seconds after request: %s\n", chunkTime, chunkMessage) // print the delay and text
+    
+    for {
+    // 从响应体中读取字节
+    chunk, err := bufio.NewReader(response.Body).ReadBytes('\n')
+    if err != nil {
+        return "", fmt.Errorf("client.Do error: %v", err)
     }
-
+    // 解码字节为 CreateCompletionStreamingResponse 类型
+    var streamingResponse CreateCompletionStreamingResponse
+    err = json.Unmarshal(chunk, &streamingResponse)
+    if err != nil {
+        return "", fmt.Errorf("client.Do error: %v", err)
+    }
+    // 将解码后的类型添加到切片中
+    collectedChunks = append(collectedChunks, streamingResponse)
+    chunkMessage := streamingResponse.Choices[0].Delta.Content // extract the message
+    collectedMessages = append(collectedMessages, chunkMessage) // save the message
+    fmt.Printf("Message received %.2f seconds after request: %s\n", chunkTime, chunkMessage) // print the delay and text
+    }
+    
     // print the time delay and text received
     fmt.Printf("Full response received %.2f seconds after request\n", time.Since(startTime).Seconds())
     fullReplyContent := ""
