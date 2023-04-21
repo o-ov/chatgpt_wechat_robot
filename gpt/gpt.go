@@ -72,7 +72,7 @@ type ChatGPTRequestBody struct {
 func Completions(msg string) (string, error) {
 	var gptResponseBody *ChatGPTResponseBody
 	var resErr error
-    startTime := time.Now()
+    start := time.Now()
 	for retry := 1; retry <= 3; retry++ {
 		if retry > 1 {
 			time.Sleep(time.Duration(retry-1) * 100 * time.Millisecond)
@@ -103,8 +103,7 @@ func httpRequestCompletions(msg string, runtimes int) (*ChatGPTResponseBody, err
 	if cfg.ApiKey == "" {
 		return nil, errors.New("api key required")
 	}
-    
-    
+    startTime := time.Now()
     requestBody := ChatGPTRequestBody{
         Model:            cfg.Model,
         MaxTokens:        cfg.MaxTokens,
