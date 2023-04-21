@@ -206,6 +206,11 @@ func httpStreamRequestCompletions(msg string, runtimes int) (string, error) {
             if temp.Delta != nil {
                 tmp := temp.Delta
                 fmt.Printf("tmp: %+v\n", tmp)
+                if tmp.Content != ""{
+                    chunkMessage := tmp.Content // extract the message
+                    fmt.Println("no 202" + chunkMessage)
+                    collectedMessages = append(collectedMessages, chunkMessage) // save the message
+                }
             }
         }
     }
