@@ -173,6 +173,7 @@ func httpStreamRequestCompletions(msg string, runtimes int) (string, error) {
         i++
         // Read a line from the response
         line, err := reader.ReadBytes('\n')
+        
         if err != nil {
             if err == io.EOF {
                 break
@@ -181,7 +182,7 @@ func httpStreamRequestCompletions(msg string, runtimes int) (string, error) {
         }
 
         // Remove the newline character from the line
-       // line = line[:len(line)-1]
+        line = line[6:len(line)-1]
 
         // Check if the line is the end of the stream
         if string(line) == "[DONE]" {
