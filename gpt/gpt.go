@@ -204,7 +204,7 @@ func httpStreamRequestCompletions(msg string, runtimes int) (string, error) {
             temp := collectedChunks.Choices[0]
             fmt.Printf("collectedChunks: %+v\n", temp)
             if temp.Delta != nil {
-                tmp = temp.Delta
+                tmp := temp.Delta
                 fmt.Printf("collectedChunks: %+v\n", tmp)
             }
         }
