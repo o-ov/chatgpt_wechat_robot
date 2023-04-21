@@ -201,8 +201,10 @@ func httpStreamRequestCompletions(msg string, runtimes int) (string, error) {
 
     // print the time delay and text received
     fullReplyContent := ""
-    for _, message := range collectedMessages {
-        fullReplyContent += message
+    if len(collectedMessages) > 0 {
+        for _, message := range collectedMessages {
+            fullReplyContent += message
+        }
     }
     fmt.Printf("Full conversation received: %s\n", fullReplyContent)
     return fullReplyContent, nil
