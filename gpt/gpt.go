@@ -197,6 +197,9 @@ func httpStreamRequestCompletions(msg string, runtimes int) (string, error) {
         if err != nil {
             return "", fmt.Errorf("Unmarshal error: %v", err)
         }
+        if collectedChunks.Data != nil && collectedChunks.Data.Choices != nil && len(collectedChunks.Data.Choices) > 0 && resp.Choices[0].Delta.Content == "" {
+            break
+        }
         fmt.Println("200+", collectedChunks.Data.Choices[0].Delta.Content)
         chunkMessage := collectedChunks.Data.Choices[0].Delta.Content // extract the message
         fmt.Println("no 202" + chunkMessage)
