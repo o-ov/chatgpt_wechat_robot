@@ -125,35 +125,62 @@ func httpRequestCompletions(msg string, runtimes int) (*ChatGPTResponseBody, err
 	
     log.Printf("gpt request(%d) json: %s\n", runtimes, string(requestData))
 	
-    req, err := http.NewRequest(http.MethodPost, "https://api.openai.com/v1/chat/completions", bytes.NewBuffer(requestData))
+    req, err := http.NewRequest(http.MethodPost, "https://api.openai.com/v1/chat/completions", bufio.NewReader(nil))
 	if err != nil {
 		return nil, fmt.Errorf("http.NewRequest error: %v", err)
 	}
 	req.Header.Set("Content-Type", "application/json")
 	req.Header.Set("Authorization", "Bearer "+cfg.ApiKey)
-	
+ // set the request body
+    req.Body = ioutil.NopCloser(bufio.NewReader(requestData))
+    
     client := &http.Client{}
 	response, err := client.Do(req)
 	if err != nil {
 		return nil, fmt.Errorf("client.Do error: %v", err)
 	}
- 
-    // Read the response body as a stream of text and print it to the console
-    scanner := bufio.NewScanner(response.Body)
-    for scanner.Scan() {
-        fmt.Println(scanner.Text())
-    }
-
     // Close the response body
 	defer response.Body.Close()
+    
+// create variables to collect the stream of events
+    var collectedEvents []Event
+    var completionText string
 
-	body, err := ioutil.ReadAll(response.Body)
-	if err != nil {
-		return nil, fmt.Errorf("ioutil.ReadAll error: %v", err)
-	}
+    // read the response stream using a scanner
+    scanner := bufio.NewScanner(response.Body)
+    for scanner.Scan() {
+        // decode the event from JSON
+        var event Event
+        err := json.Unmarshal(scanner.Bytes(), &event)
+        if err != nil {
+            panic(err)
+        }
 
+        // calculate the time delay of the event
+        eventTime := time.Since(startTime).Seconds()
+
+        // save the event response
+        collectedEvents = append(collectedEvents, event)
+
+        // extract the text and append to the completion text
+        eventText := event.Choices[0].Text
+        completionText += eventText
+
+        // print the delay and text
+        fmt.Printf("Text received: %s (%.2f seconds after request)\n", eventText, eventTime)
+    }
+
+    // print the time delay and text received
+    fullTime := time.Since(startTime).Seconds()
+    fmt.Printf("Full response received %.2f seconds after request\n", fullTime)
+    fmt.Printf("Full text received: %s\n", completionText)
+    
+    body, err := ioutil.ReadAll(response.Body)
+    if err != nil {
+        return nil, fmt.Errorf("ioutil.ReadAll error: %v", err)
+    }
+    
 	log.Printf("gpt response(%d) json: %s\n", runtimes, string(body))
-
 	gptResponseBody := &ChatGPTResponseBody{}
 	err = json.Unmarshal(body, gptResponseBody)
 	if err != nil {
