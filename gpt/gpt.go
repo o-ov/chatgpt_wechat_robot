@@ -7,8 +7,6 @@ import (
 	"fmt"
 	"log"
     "io/ioutil"
-    "io"
-    "bufio"
 	"net/http"
 	"time"
 	"github.com/qingconglaixueit/wechatbot/config"
@@ -172,7 +170,7 @@ func httpStreamRequestCompletions(msg string, runtimes int) (string, error) {
     fmt.Println("no 172" + bodyString)
     var collectedChunks StreamRes
 
-    err = json.Unmarshal(chunk, &collectedChunks)
+    err = json.Unmarshal(bodyString, &collectedChunks)
     if err != nil {
         return "", fmt.Errorf("Unmarshal error: %v", err)
     }
