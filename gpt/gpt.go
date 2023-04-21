@@ -7,6 +7,7 @@ import (
 	"errors"
 	"fmt"
 	"log"
+    “io/ioutil”
 	"net/http"
 	"time"
 	"github.com/qingconglaixueit/wechatbot/config"
@@ -157,9 +158,15 @@ func httpStreamRequestCompletions(msg string, runtimes int) (string, error) {
     // Close the response body
     defer response.Body.Close()
    
-    
-    
+    bodyBytes, err := ioutil.ReadAll(response.Body)
+    if err != nil {
+        return "", fmt.Errorf("ioutil.ReadAll error: %v", err)
+    }
 
+    bodyString := string(bodyBytes)
+    fmt.Println(bodyString)
+    
+/*
     // create variables to collect the stream of chunks
     collectedChunks := make([]CreateCompletionStreamingResponse, 0)
     collectedMessages := make([]string, 0)
@@ -182,11 +189,12 @@ func httpStreamRequestCompletions(msg string, runtimes int) (string, error) {
     collectedMessages = append(collectedMessages, chunkMessage) // save the message
     }
     
+*/
     // print the time delay and text received
     fullReplyContent := ""
-    for _, message := range collectedMessages {
-        fullReplyContent += message
-    }
-    fmt.Printf("Full conversation received: %s\n", fullReplyContent)
+    //for _, message := range collectedMessages {
+      //  fullReplyContent += message
+    //}
+    //fmt.Printf("Full conversation received: %s\n", fullReplyContent)
     return fullReplyContent, nil
 }
