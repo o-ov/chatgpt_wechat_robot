@@ -132,14 +132,12 @@ func httpRequestCompletions(msg string, runtimes int) (*ChatGPTResponseBody, err
 	
     log.Printf("gpt request(%d) json: %s\n", runtimes, string(requestData))
 	
-    req, err := http.NewRequest(http.MethodPost, "https://api.openai.com/v1/chat/completions", bufio.NewReader(nil))
+    req, err := http.NewRequest(http.MethodPost, "https://api.openai.com/v1/chat/completions", bytes.NewBuffer(requestData))
 	if err != nil {
 		return nil, fmt.Errorf("http.NewRequest error: %v", err)
 	}
 	req.Header.Set("Content-Type", "application/json")
 	req.Header.Set("Authorization", "Bearer "+cfg.ApiKey)
- // set the request body
-    req.Body = ioutil.NopCloser(bufio.NewReader(requestData))
     
     client := &http.Client{}
 	response, err := client.Do(req)
