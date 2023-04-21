@@ -88,7 +88,6 @@ type ChatGPTRequestBody struct {
 //-d '{"model": "text-davinci-003", "prompt": "give me good song", "temperature": 0, "max_tokens": 7}'
 
 func Completions(msg string) (string, error) {
-	var gptResponseBody *ChatGPTResponseBody
 	var resErr error
     start := time.Now()
     var reply string
@@ -102,7 +101,7 @@ func Completions(msg string) (string, error) {
 			log.Printf("gpt request(%d) error: %v\n", retry, resErr)
 			continue
 		}
-		if gptResponseBody.Error.Message == "" {
+		if reply == "" {
 			break
 		}
 	}
