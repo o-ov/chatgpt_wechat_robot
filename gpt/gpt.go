@@ -194,10 +194,8 @@ func httpStreamRequestCompletions(msg string, runtimes int) (string, error) {
         fmt.Println("no 194" + streamingResponse.Data.Choices[0].Delta.Content)
         // 将解码后的类型添加到切片中
         collectedChunks = append(collectedChunks, streamingResponse)
-        if streamingResponse.Data.Choices[0].Delta.Content != nil{
-            chunkMessage := streamingResponse.Data.Choices[0].Delta.Content // extract the message
-            collectedMessages = append(collectedMessages, chunkMessage) // save the message
-            }
+        chunkMessage := streamingResponse.Data.Choices[0].Delta.Content // extract the message
+        collectedMessages = append(collectedMessages, chunkMessage) // save the message
         }
     
 
