@@ -179,7 +179,10 @@ func httpStreamRequestCompletions(msg string, runtimes int) (string, error) {
     // 从响应体中读取字节
     chunk, err := bufio.NewReader(response.Body).ReadBytes('\n')
     if err != nil {
-        return "", fmt.Errorf("ReadBytes error: %v", err)
+        if err != io.EOF {
+            return "", fmt.Errorf("ReadBytes error: %v", err)
+        }
+        break
     }
     // 解码字节为 CreateCompletionStreamingResponse 类型
     var streamingResponse StreamRes
@@ -192,9 +195,6 @@ func httpStreamRequestCompletions(msg string, runtimes int) (string, error) {
     collectedChunks = append(collectedChunks, streamingResponse)
     chunkMessage := streamingResponse.Data.Choices[0].Delta.Content // extract the message
     collectedMessages = append(collectedMessages, chunkMessage) // save the message
-    if streamingResponse.Data.Choices[0].FinishReason == "stop" {
-        break
-        }
     }
     
 
