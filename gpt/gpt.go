@@ -63,7 +63,7 @@ type ChoiceItem struct {
 
 type Message struct {
     Role    string `json:"role,omitempty"`
-    Content string `json:"content,omitempty"`
+    Content string `json:"content"`
     Name    string `json:"name,omitempty"`
 }
 
@@ -198,7 +198,7 @@ func httpStreamRequestCompletions(msg string, runtimes int) (string, error) {
             return "", fmt.Errorf("Unmarshal error: %v", err)
         }
         fmt.Println("200+", collectedChunks.Data.Choices[0].Delta.Content)
-        chunkMessage := collectedChunks.Data.Choices[0].Delta.Message.Content // extract the message
+        chunkMessage := collectedChunks.Data.Choices[0].Delta.Content // extract the message
         fmt.Println("no 202" + chunkMessage)
         collectedMessages = append(collectedMessages, chunkMessage) // save the message
     }
