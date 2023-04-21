@@ -49,7 +49,7 @@ type ChatGPTRequestBody struct {
 	TopP             int     `json:"top_p"`
 	FrequencyPenalty int     `json:"frequency_penalty"`
 	PresencePenalty  int     `json:"presence_penalty"`
-    Stream  string                 `json:"stream"`
+    Stream            bool    `json:"stream"`
     Messages         []Message         `json:"messages"`
 }
 
@@ -104,7 +104,7 @@ func httpRequestCompletions(msg string, runtimes int) (*ChatGPTResponseBody, err
         TopP:             1,
         FrequencyPenalty: 0,
         PresencePenalty:  0,
-        Stream:           "True",
+        Stream:           true,
         Messages:        []Message{
             {
                 Role:    "system",
