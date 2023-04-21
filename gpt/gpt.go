@@ -39,7 +39,7 @@ type Event struct {
 }
 
 type StreamRes struct {
-    Data *CreateCompletionStreamingResponse `json:"data"`
+    Data []*CreateCompletionStreamingResponse `json:"data"`
 }
 
 type CreateCompletionStreamingResponse struct {
@@ -170,33 +170,18 @@ func httpStreamRequestCompletions(msg string, runtimes int) (string, error) {
 
     bodyString := string(bodyBytes)
     fmt.Println("no 172" + bodyString)
-    
+    var collectedChunks StreamRes
 
-    // create variables to collect the stream of chunks
-    collectedChunks := make([]StreamRes, 0)
+    err = json.Unmarshal(chunk, &collectedChunks)
+    if err != nil {
+        return "", fmt.Errorf("Unmarshal error: %v", err)
+    }
     collectedMessages := make([]string, 0)
-    
-    for {
-    // 从响应体中读取字节
-        chunk, err := bufio.NewReader(response.Body).ReadBytes('\n')
-        if err != nil {
-            if err != io.EOF {
-                return "", fmt.Errorf("ReadBytes error: %v", err)
-            }
-            break
-        }
-        // 解码字节为 CreateCompletionStreamingResponse 类型
-        var streamingResponse StreamRes
-        err = json.Unmarshal(chunk, &streamingResponse)
-        if err != nil {
-            return "", fmt.Errorf("Unmarshal error: %v", err)
-        }
-        fmt.Println("no 194" + streamingResponse.Data.Choices[0].Delta.Content)
-        // 将解码后的类型添加到切片中
-        collectedChunks = append(collectedChunks, streamingResponse)
-        chunkMessage := streamingResponse.Data.Choices[0].Delta.Content // extract the message
+    for _, data := range collectedChunks.Data{
+        chunkMessage := data.Choices[0].Delta.Content // extract the message
+        fmt.Println("no 182" + chunkMessage)
         collectedMessages = append(collectedMessages, chunkMessage) // save the message
-        }
+    }
     
 
     // print the time delay and text received
