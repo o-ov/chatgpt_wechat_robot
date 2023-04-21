@@ -62,6 +62,7 @@ type ChatGPTRequestBody struct {
 func Completions(msg string) (string, error) {
 	var gptResponseBody *ChatGPTResponseBody
 	var resErr error
+    start := time.Now()
 	for retry := 1; retry <= 3; retry++ {
 		if retry > 1 {
 			time.Sleep(time.Duration(retry-1) * 100 * time.Millisecond)
@@ -82,6 +83,8 @@ func Completions(msg string) (string, error) {
 	if gptResponseBody != nil && len(gptResponseBody.Choices) > 0 {
 		reply = gptResponseBody.Choices[0].Message.Content
 	}
+    elapsed := time.Since(start)
+    log.Printf("API response time: %s\n", elapsed)
 	return reply, nil
 }
 
