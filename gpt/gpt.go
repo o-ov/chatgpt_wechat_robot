@@ -65,7 +65,7 @@ func Completions(msg string) (string, error) {
 	var resErr error
 	for retry := 1; retry <= 3; retry++ {
 		if retry > 1 {
-			time.Sleep(time.Duration(retry-1) * 500 * time.Millisecond)
+			time.Sleep(time.Duration(retry-1) * 100 * time.Millisecond)
 		}
 		gptResponseBody, resErr = httpRequestCompletions(msg, retry)
 		if resErr != nil {
