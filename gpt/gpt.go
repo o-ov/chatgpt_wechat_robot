@@ -179,7 +179,10 @@ func httpStreamRequestCompletions(msg string, runtimes int) (string, error) {
         // Read a line from the response
         line, err := reader.ReadBytes('\n')
         if err != nil {
-            return "", fmt.Errorf("ReadBytes error: %v", err)
+            if err == io.EOF {
+                break
+            }
+        return "", fmt.Errorf("ReadBytes error: %v", err)
         }
 
         // Remove the newline character from the line
