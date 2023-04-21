@@ -73,11 +73,13 @@ func Completions(msg string) (string, error) {
 	var gptResponseBody *ChatGPTResponseBody
 	var resErr error
     start := time.Now()
+    var reply string
 	for retry := 1; retry <= 3; retry++ {
 		if retry > 1 {
 			time.Sleep(time.Duration(retry-1) * 100 * time.Millisecond)
 		}
-		gptResponseBody, resErr = httpRequestCompletions(msg, retry)
+        
+        reply, resErr = httpRequestCompletions(msg, retry)
 		if resErr != nil {
 			log.Printf("gpt request(%d) error: %v\n", retry, resErr)
 			continue
@@ -89,16 +91,12 @@ func Completions(msg string) (string, error) {
 	if resErr != nil {
 		return "", resErr
 	}
-	var reply string
-	if gptResponseBody != nil && len(gptResponseBody.Choices) > 0 {
-		reply = gptResponseBody.Choices[0].Message.Content
-	}
     elapsed := time.Since(start)
     log.Printf("API response time: %s\n", elapsed)
 	return reply, nil
 }
 
-func httpRequestCompletions(msg string, runtimes int) (*ChatGPTResponseBody, error) {
+func httpRequestCompletions(msg string, runtimes int) (string, error) {
 	cfg := config.LoadConfig()
 	if cfg.ApiKey == "" {
 		return nil, errors.New("api key required")
@@ -153,6 +151,7 @@ func httpRequestCompletions(msg string, runtimes int) (*ChatGPTResponseBody, err
 
     // read the response stream using a scanner
     scanner := bufio.NewScanner(response.Body)
+    
     for scanner.Scan() {
         // decode the event from JSON
         var event Event
@@ -180,16 +179,5 @@ func httpRequestCompletions(msg string, runtimes int) (*ChatGPTResponseBody, err
     fmt.Printf("Full response received %.2f seconds after request\n", fullTime)
     fmt.Printf("Full text received: %s\n", completionText)
     
-    body, err := ioutil.ReadAll(response.Body)
-    if err != nil {
-        return nil, fmt.Errorf("ioutil.ReadAll error: %v", err)
-    }
-    
-	log.Printf("gpt response(%d) json: %s\n", runtimes, string(body))
-	gptResponseBody := &ChatGPTResponseBody{}
-	err = json.Unmarshal(body, gptResponseBody)
-	if err != nil {
-		return nil, fmt.Errorf("json.Marshal responseBody error: %v", err)
-	}
-	return gptResponseBody, nil
+	return completionText, nil
 }
