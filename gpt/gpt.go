@@ -188,6 +188,7 @@ func httpStreamRequestCompletions(msg string, runtimes int) (string, error) {
             break
         }
         // Remove the newline character from the line
+        fmt.Println("Received JSON data:", string(line))
         line = line[6:len(line)-1]
 
         // Otherwise, assume the line is JSON data
