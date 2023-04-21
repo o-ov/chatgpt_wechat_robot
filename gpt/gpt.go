@@ -183,6 +183,8 @@ func httpStreamRequestCompletions(msg string, runtimes int) (string, error) {
     }
     // 解码字节为 CreateCompletionStreamingResponse 类型
     var streamingResponse StreamRes
+    var cData CreateCompletionStreamingResponse
+
     err = json.Unmarshal(chunk, &streamingResponse)
     if err != nil {
         return "", fmt.Errorf("Unmarshal error: %v", err)
