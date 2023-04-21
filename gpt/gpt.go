@@ -194,12 +194,12 @@ func httpStreamRequestCompletions(msg string, runtimes int) (string, error) {
         fmt.Println("Received JSON data:", string(line))
         var collectedChunks StreamRes
         err = json.Unmarshal(line, &collectedChunks)
+        fmt.Printf("collectedChunks: %+v\n", collectedChunks)
+
         if err != nil {
             return "", fmt.Errorf("Unmarshal error: %v", err)
         }
-        if collectedChunks.Data != nil && collectedChunks.Data.Choices != nil && len(collectedChunks.Data.Choices) > 0 && collectedChunks.Data.Choices[0].Delta.Content == "" {
-            break
-        }
+        
         fmt.Println("200+", collectedChunks.Data.Choices[0].Delta.Content)
         chunkMessage := collectedChunks.Data.Choices[0].Delta.Content // extract the message
         fmt.Println("no 202" + chunkMessage)
