@@ -172,7 +172,7 @@ func httpStreamRequestCompletions(msg string, runtimes int) (string, error) {
     
 
     // create variables to collect the stream of chunks
-    collectedChunks := make([]CreateCompletionStreamingResponse, 0)
+    collectedChunks := make([]StreamRes, 0)
     collectedMessages := make([]string, 0)
     
     for {
@@ -183,14 +183,13 @@ func httpStreamRequestCompletions(msg string, runtimes int) (string, error) {
     }
     // 解码字节为 CreateCompletionStreamingResponse 类型
     var streamingResponse StreamRes
-    var cData CreateCompletionStreamingResponse
 
     err = json.Unmarshal(chunk, &streamingResponse)
     if err != nil {
         return "", fmt.Errorf("Unmarshal error: %v", err)
     }
     // 将解码后的类型添加到切片中
-    collectedChunks = append(collectedChunks, streamingResponse.Data)
+    collectedChunks = append(collectedChunks, streamingResponse)
     chunkMessage := streamingResponse.Data.Choices[0].Delta.Content // extract the message
     collectedMessages = append(collectedMessages, chunkMessage) // save the message
     }
