@@ -110,99 +110,6 @@ func Completions(msg string) (string, error) {
 	return reply, nil
 }
 
-func httpRequestCompletions(msg string, runtimes int) (string, error) {
-	cfg := config.LoadConfig()
-	if cfg.ApiKey == "" {
-		return "", errors.New("api key required")
-	}
-    startTime := time.Now()
-    requestBody := ChatGPTRequestBody{
-        Model:            cfg.Model,
-        MaxTokens:        cfg.MaxTokens,
-        Temperature:      cfg.Temperature,
-        TopP:             1,
-        FrequencyPenalty: 0,
-        PresencePenalty:  0,
-        Stream:           true,
-        Messages:        []Message{
-            {
-                Role:    "system",
-                Content: "You are a helpful assistant.",
-            },
-            {
-                Role:    "user",
-                Content: msg,
-            },
-        },
-    }
-    
-    
-	requestData, err := json.Marshal(requestBody)
-	if err != nil {
-		return "", fmt.Errorf("json.Marshal requestBody error: %v", err)
-	}
-	
-    log.Printf("gpt request(%d) json: %s\n", runtimes, string(requestData))
-	
-    req, err := http.NewRequest(http.MethodPost, "https://api.openai.com/v1/chat/completions", bytes.NewBuffer(requestData))
-	if err != nil {
-		return "", fmt.Errorf("http.NewRequest error: %v", err)
-	}
-	req.Header.Set("Content-Type", "application/json")
-	req.Header.Set("Authorization", "Bearer "+cfg.ApiKey)
-    
-    client := &http.Client{}
-	response, err := client.Do(req)
-	if err != nil {
-		return "", fmt.Errorf("client.Do error: %v", err)
-	}
-    // Close the response body
-	defer response.Body.Close()
-    
-    responseBody, err := ioutil.ReadAll(response.Body)
-    if err != nil {
-        return "", fmt.Errorf("client.Do error: %v", err)
-    }
-    
-    
-// create variables to collect the stream of events
-    var collectedEvents []Event
-    var completionText string
-
-    // read the response stream using a scanner
-    scanner := bufio.NewScanner(response.Body)
-    
-    for scanner.Scan() {
-        // decode the event from JSON
-        var event Event
-        err := json.Unmarshal(scanner.Bytes(), &event)
-        if err != nil {
-            return "", fmt.Errorf("client.Do error: %v", err)
-        }
-
-        // calculate the time delay of the event
-        eventTime := time.Since(startTime).Seconds()
-
-        // save the event response
-        collectedEvents = append(collectedEvents, event)
-
-        // extract the text and append to the completion text
-        eventText := event.Choices[0].Text
-        completionText += eventText
-
-        // print the delay and text
-        fmt.Printf("Text received: %s (%.2f seconds after request)\n", eventText, eventTime)
-    }
-
-    // print the time delay and text received
-    fullTime := time.Since(startTime).Seconds()
-    fmt.Printf("Full response received %.2f seconds after request\n", fullTime)
-    fmt.Printf("Full text received: %s\n", completionText)
-    
-	return completionText, nil
-}
-
-
 func httpStreamRequestCompletions(msg string, runtimes int) (string, error) {
     cfg := config.LoadConfig()
     if cfg.ApiKey == "" {
@@ -258,7 +165,7 @@ func httpStreamRequestCompletions(msg string, runtimes int) (string, error) {
     collectedMessages := make([]string, 0)
 
     // iterate through the stream of events
-    for _, chunk := range response {
+    for chunk in response {
         chunkTime := time.Since(startTime).Seconds() // calculate the time delay of the chunk
         collectedChunks = append(collectedChunks, chunk) // save the event response
         chunkMessage := chunk.Choices[0].Delta.Content // extract the message
