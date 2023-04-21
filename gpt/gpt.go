@@ -2,7 +2,6 @@ package gpt
 
 import (
 	"bytes"
-    "bufio"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -159,13 +158,17 @@ func httpStreamRequestCompletions(msg string, runtimes int) (string, error) {
     // Close the response body
     defer response.Body.Close()
    
+    respBytes, err := ioutil.ReadAll(response.Body)
+    if err != nil {
+        return "", fmt.Errorf("client.Do error: %v", err)
+    }
 
     // create variables to collect the stream of chunks
     collectedChunks := make([]CreateCompletionStreamingResponse, 0)
     collectedMessages := make([]string, 0)
 
     // iterate through the stream of events
-    for chunk := range response{
+    for _, chunk := range respBytes {
         chunkTime := time.Since(startTime).Seconds() // calculate the time delay of the chunk
         collectedChunks = append(collectedChunks, chunk) // save the event response
         chunkMessage := chunk.Choices[0].Delta.Content // extract the message
