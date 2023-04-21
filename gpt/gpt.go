@@ -197,12 +197,10 @@ func httpStreamRequestCompletions(msg string, runtimes int) (string, error) {
         if err != nil {
             return "", fmt.Errorf("Unmarshal error: %v", err)
         }
-        if collectedChunks.Data.Choices[0].Delta.Content != nil{
-            fmt.Println("200+", collectedChunks.Data.Choices[0].Delta.Content)
-            chunkMessage := collectedChunks.Data.Choices[0].Delta.Content // extract the message
-            fmt.Println("no 202" + chunkMessage)
-            collectedMessages = append(collectedMessages, chunkMessage) // save the message
-        }
+        fmt.Println("200+", collectedChunks.Data.Choices[0].Delta.Content)
+        chunkMessage := collectedChunks.Data.Choices[0].Delta.Message.Content // extract the message
+        fmt.Println("no 202" + chunkMessage)
+        collectedMessages = append(collectedMessages, chunkMessage) // save the message
     }
 
     // print the time delay and text received
